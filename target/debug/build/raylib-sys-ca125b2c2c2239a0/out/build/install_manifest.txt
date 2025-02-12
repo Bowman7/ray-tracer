@@ -1,0 +1,7 @@
+/home/bat/25/raytracer/target/debug/build/raylib-sys-ca125b2c2c2239a0/out/lib/libraylib.a
+/home/bat/25/raytracer/target/debug/build/raylib-sys-ca125b2c2c2239a0/out/include/raylib.h
+/home/bat/25/raytracer/target/debug/build/raylib-sys-ca125b2c2c2239a0/out/include/rlgl.h
+/home/bat/25/raytracer/target/debug/build/raylib-sys-ca125b2c2c2239a0/out/include/raymath.h
+/home/bat/25/raytracer/target/debug/build/raylib-sys-ca125b2c2c2239a0/out/lib/pkgconfig/raylib.pc
+/home/bat/25/raytracer/target/debug/build/raylib-sys-ca125b2c2c2239a0/out/lib/cmake/raylib/raylib-config-version.cmake
+/home/bat/25/raytracer/target/debug/build/raylib-sys-ca125b2c2c2239a0/out/lib/cmake/raylib/raylib-config.cmake
