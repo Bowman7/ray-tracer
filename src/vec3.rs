@@ -20,11 +20,17 @@ impl Vec3{
 	self.v3 = viewport_u_v.v3 * (1.0/image_width);
 	
     }
-    //sub vec3 to vec3
-    pub fn Sub_Vec_Vec(&mut self, p_vec : Vec3){
+    //sub self to vec3
+    pub fn Sub_Self_Vec(&mut self, p_vec : Vec3){
 	self.v1 = self.v1  - p_vec.v1;
 	self.v2 = self.v2  - p_vec.v2;
 	self.v3 = self.v3  - p_vec.v3;
+    }
+    //sub a vec3 to vec3
+    pub fn Sub_Vec_Vec(&mut self, p_v1 : Vec3, p_v2 : Vec3){
+	self.v1 = p_v1.v1  - p_v2.v1;
+	self.v2 = p_v1.v2  - p_v2.v2;
+	self.v3 = p_v1.v3  - p_v2.v3;
     }
     //sub vec3 to vec3 for upper left pixel
     pub fn Sub_Vec_Vec_ul(&mut self, p_vec : Vec3, val: f64){
@@ -49,5 +55,10 @@ impl Vec3{
 	self.v1 = self.v1*val;
 	self.v2 = self.v2*val;
 	self.v3 = self.v3*val;
+    }
+    //calc unit vector
+    pub fn Unit_Self_Vec(&mut self,t_v1 : Vec3){
+	let length : f64 = (t_v1.v1*t_v1.v1 +
+			 t_v2*t_v2 + t_v3*t_v3).sqrt();
     }
 }

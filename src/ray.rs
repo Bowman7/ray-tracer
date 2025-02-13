@@ -68,11 +68,11 @@ impl Ray{
 
 	//sub vec3's
 	let focal_len_vec : Vec3 = Vec3::Init_Vec(0.0,0.0,focal_length);
-	viewport_upper_left.Sub_Vec_Vec(focal_len_vec);
+	viewport_upper_left.Sub_Self_Vec(focal_len_vec);
 	viewport_upper_left.print_val();
-	viewport_upper_left.Sub_Vec_Vec_ul(viewport_u,2.0);
+	viewport_upper_left.Sub_Self_Vec_ul(viewport_u,2.0);
 	viewport_upper_left.print_val();
-	viewport_upper_left.Sub_Vec_Vec_ul(viewport_v,2.0);
+	viewport_upper_left.Sub_Self_Vec_ul(viewport_v,2.0);
 	viewport_upper_left.print_val();
 
 	//calculate centre of first pixel
@@ -102,6 +102,8 @@ impl Ray{
 	let mut temp_pixel_delta_u : Vec3 = pixel_delta_u.clone();
 	let mut temp_pixel_delta_v : Vec3 = pixel_delta_v.clone();
 
+	let mut ray_direction : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
+	let mut unit_direction : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	
 	//init pixel pos
 	'outer : for r in 0..200{
@@ -118,10 +120,16 @@ impl Ray{
 		temp_pixel_delta_u.Mul_Num_Vec(c as f64);
 		temp_pixel_delta_v.Mul_Num_Vec(r as f64);
 		
-		pixel_centre.Sum_Self_Vec(pixel_00_loc.clone());
+		pixel_centre = pixel_00_loc.clone();
 		pixel_centre.Sum_Self_Vec(temp_pixel_delta_u.clone());
 		pixel_centre.Sum_Self_Vec(temp_pixel_delta_v.clone());
 		pixel_centre.print_val();
+
+		//ray direction
+		ray_direction.Sub_Vec_Vec(pixel_centre,camera_centre);
+
+		//currently directly using the ray_direction
+		unit_direction.Unit_Self_Vec(ray_direction.clone());
 		
 		//set color
 		let temp_r : f32 = (r as f32)/(IMAGE_HEIGHT-1) as f32;
