@@ -3,12 +3,15 @@ pub struct Vec3{
     v1 : f64,
     v2 : f64,
     v3 : f64,
+    vec_r : i64,
+    vec_g : i64,
+    vec_b : i64,
 }
 
 impl Vec3{
     
     pub fn Init_Vec(v1: f64, v2: f64 ,v3: f64)->Self{
-	Vec3{v1 : v1,v2: v2, v3: v3 }
+	Vec3{v1 : v1,v2: v2, v3: v3, vec_r: 0,vec_g: 0,vec_b: 0}
     }
 
     pub fn print_val(&self){
@@ -33,7 +36,7 @@ impl Vec3{
 	self.v3 = p_v1.v3  - p_v2.v3;
     }
     //sub vec3 to vec3 for upper left pixel
-    pub fn Sub_Vec_Vec_ul(&mut self, p_vec : Vec3, val: f64){
+    pub fn Sub_Self_Vec_ul(&mut self, p_vec : Vec3, val: f64){
 	self.v1 = self.v1  - p_vec.v1/val;
 	self.v2 = self.v2  - p_vec.v2/val;
 	self.v3 = self.v3  - p_vec.v3/val;
@@ -51,14 +54,73 @@ impl Vec3{
 	self.v3 = self.v3 + v_1.v3;
     }
     //mul num to vec
-    pub fn Mul_Num_Vec(&mut self,val: f64){
+    pub fn Mul_Self_Vec(&mut self,val: f64){
+	//println!("val: {} v1:{} v2 {} v3 {}",val,self.v1,self.v2,self.v3);
 	self.v1 = self.v1*val;
 	self.v2 = self.v2*val;
 	self.v3 = self.v3*val;
     }
+    //return a mul self vec
+    pub fn Ret_Mul_Self_Vec(&mut self,v : Vec3 , val : f64)->Vec3{
+	Vec3{
+	    v1 : v.v1*val,
+	    v2 : v.v2*val,
+	    v3 : v.v3*val,
+	    vec_r : 0,
+	    vec_g : 0,
+	    vec_b : 0,
+	}
+    }
     //calc unit vector
     pub fn Unit_Self_Vec(&mut self,t_v1 : Vec3){
 	let length : f64 = (t_v1.v1*t_v1.v1 +
-			 t_v2*t_v2 + t_v3*t_v3).sqrt();
+			    t_v1.v2*t_v1.v2 + t_v1.v3*t_v1.v3).sqrt();
+
+	//println!("v1: {} Length : {}",self.v1,length);
+	self.v1 = t_v1.v1 / length;
+	self.v2 = t_v1.v2 / length;
+	self.v3 = t_v1.v3 / length;
+    }
+    pub fn Get_V2(&self)->f64{
+	let t : f64 = self.v2;
+	return t;
+    }
+    //mul a num to a vec
+    pub fn Mul_Num_Vec(&mut self,val: f64, v1 : Vec3){
+	self.v1 = val*v1.v1;
+	self.v2 = val*v1.v2;
+	self.v3 = val*v1.v3;
+    }
+    //now convert the vec3 values into color[0,255]
+    pub fn Convert_To_Color(&mut self){
+	let r : f64 = self.v1;
+	let g : f64 = self.v2;
+	let b : f64 = self.v3;
+
+	//translate [0,1] to [0,255]
+
+	let r_int : i64 = (255.999 * r) as i64;
+	let g_int : i64 = (255.999 * g) as i64;	
+	let b_int : i64 = (255.999 * b) as i64;
+
+	//put into the rgb val in vec
+	self.vec_r = r_int;
+	self.vec_g = g_int;
+	self.vec_b = b_int;
+    }
+    //print color of vec
+    pub fn Print_Color(&self){
+	println!("r: {} g: {} b: {}",self.vec_r,
+		 self.vec_g,self.vec_b);
+    }
+    //return rgb
+    pub fn Get_R(&self)->i64{
+	return self.vec_r;
+    }
+    pub fn Get_G(&self)->i64{
+	return self.vec_g;
+    }
+    pub fn Get_B(&self)->i64{
+	return self.vec_b;
     }
 }

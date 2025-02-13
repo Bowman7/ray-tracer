@@ -83,7 +83,7 @@ impl Ray{
 	let mut temp_vec : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	temp_vec.Sum_Vec_Vec(temp_vec_v,temp_vec_u);
 	temp_vec.print_val();
-	temp_vec.Mul_Num_Vec(0.5);
+	temp_vec.Mul_Self_Vec(0.5);
 	temp_vec.print_val();
 
 	//for final centre pixel location
@@ -99,11 +99,20 @@ impl Ray{
 
 	//init some vec3 for color calculation
 	let mut pixel_centre : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
+	
 	let mut temp_pixel_delta_u : Vec3 = pixel_delta_u.clone();
 	let mut temp_pixel_delta_v : Vec3 = pixel_delta_v.clone();
 
 	let mut ray_direction : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	let mut unit_direction : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
+
+	//variables for the linear blend
+	let mut temp_color_1 : Vec3  = Vec3::Init_Vec(0.0,0.0,0.0);
+	let mut temp_color_2 : Vec3  = Vec3::Init_Vec(0.0,0.0,0.0);
+	let mut temp_color_3 : Vec3  = Vec3::Init_Vec(0.0,0.0,0.0);
+
+	let blend_col1 : Vec3 = Vec3::Init_Vec(1.0,1.0,1.0);
+	let blend_col2 : Vec3 = Vec3::Init_Vec(0.5,0.7,1.0);
 	
 	//init pixel pos
 	'outer : for r in 0..200{
@@ -113,40 +122,71 @@ impl Ray{
 		    break 'outer
 		}
 		//setting the pos
-		pixel_arr[count].pos_x =c;
+		pixel_arr[count].pos_x = c;
 		pixel_arr[count].pos_y = r;
 
 		//1. set the centre of current pixel
-		temp_pixel_delta_u.Mul_Num_Vec(c as f64);
-		temp_pixel_delta_v.Mul_Num_Vec(r as f64);
+
+		if c < 1{
+		    println!("temp_ pixel delta_u before");
+		    temp_pixel_delta_u.print_val();
+		}
+		temp_pixel_delta_u.Ret_Mul_Self_Vec(pixel_delta_u.clone(),
+						    c as f64);
+
+		if c < 1{
+		    println!("temp_ pixel delta u  after");
+		    temp_pixel_delta_u.print_val();
+		}
+		
+		temp_pixel_delta_v.Ret_Mul_Self_Vec(pixel_delta_v.clone(),
+						r as f64);
 		
 		pixel_centre = pixel_00_loc.clone();
 		pixel_centre.Sum_Self_Vec(temp_pixel_delta_u.clone());
 		pixel_centre.Sum_Self_Vec(temp_pixel_delta_v.clone());
-		pixel_centre.print_val();
+		//pixel_centre.print_val();
 
 		//ray direction
-		ray_direction.Sub_Vec_Vec(pixel_centre,camera_centre);
+		ray_direction.Sub_Vec_Vec(pixel_centre.clone(),camera_centre.clone());
+		//ray_direction.print_val();
 
 		//currently directly using the ray_direction
 		unit_direction.Unit_Self_Vec(ray_direction.clone());
-		
-		//set color
-		let temp_r : f32 = (r as f32)/(IMAGE_HEIGHT-1) as f32;
-		let temp_g : f32 = (c as f32)/(IMAGE_WIDTH-1) as f32;
-		let temp_b : f32 = 0.0;
+		//unit_direction.print_val();
 
-		//println!("tr: {} tg: {} tb: {}",temp_r,temp_g,temp_b);
+		//now applying the linear blend
+		let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
+		//println!("a: {} ",a);
+		//---now the main color
+		temp_color_1.Mul_Num_Vec(1.0-a,blend_col1.clone());
+		//temp_color_1.print_val();
+		temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
+		//temp_color_2.print_val();
+
+		temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
+		//temp_color_3.print_val();
 		
-		let i_r : i32 = (255.999 * temp_r) as i32;
-		let i_g : i32 = (255.999 * temp_g) as i32;
-		let i_b : i32 = (255.999 * temp_b) as i32;
+		//convert the [0,1] to color
+		temp_color_3.Convert_To_Color();
+		//temp_color_3.Print_Color();
+		
+		// //set color
+		// let temp_r : f32 = (r as f32)/(IMAGE_HEIGHT-1) as f32;
+		// let temp_g : f32 = (c as f32)/(IMAGE_WIDTH-1) as f32;
+		// let temp_b : f32 = 0.0;
+
+		// //println!("tr: {} tg: {} tb: {}",temp_r,temp_g,temp_b);
+		
+		// let i_r : i32 = (255.999 * temp_r) as i32;
+		// let i_g : i32 = (255.999 * temp_g) as i32;
+		// let i_b : i32 = (255.999 * temp_b) as i32;
 
 		//println!("ir: {} ig: {} ib: {}",i_r,i_g,i_b);
 		
-		pixel_arr[count].p_r = i_r as u8;
-		pixel_arr[count].p_g = i_g as u8;
-		pixel_arr[count].p_b = i_b as u8;
+		pixel_arr[count].p_r = temp_color_3.Get_R() as u8;
+		pixel_arr[count].p_g = temp_color_3.Get_G() as u8;
+		pixel_arr[count].p_b = temp_color_3.Get_B() as u8;
 
 		//println!("pr: {} pg: {} pb: {}",pixel_arr[count].p_r,pixel_arr[count].p_g,pixel_arr[count].p_b);
 
@@ -175,9 +215,9 @@ impl Ray{
 	//draw grids
 	for col in 0..200{
 	    //vert
-	    d.draw_line(col*PIXEL_SIZE as i32 ,0,col*PIXEL_SIZE as i32 ,1000,Color::BLACK);
-	    //hor
-	    d.draw_line(0,col*PIXEL_SIZE as i32 ,1000,col*PIXEL_SIZE as i32 ,Color::BLACK);
+	    // d.draw_line(col*PIXEL_SIZE as i32 ,0,col*PIXEL_SIZE as i32 ,1000,Color::BLACK);
+	    // //hor
+	    // d.draw_line(0,col*PIXEL_SIZE as i32 ,1000,col*PIXEL_SIZE as i32 ,Color::BLACK);
 	}
 	
     }
