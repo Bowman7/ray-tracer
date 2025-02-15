@@ -53,15 +53,10 @@ impl Ray{
 
 	//delta vecs:these are small vals used for moving either left or right in viewport
 	let mut pixel_delta_u : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
-	println!("Before:");
-	pixel_delta_u.print_val();
 	pixel_delta_u.Div_Vec_Double(&viewport_u,image_width as f64);
-	println!("After:");
-	pixel_delta_u.print_val();
-
+	
 	let mut pixel_delta_v : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	pixel_delta_v.Div_Vec_Double(&viewport_v,image_height as f64);
-	pixel_delta_v.print_val();
 
 	//upper left pixel proof
 	let mut viewport_upper_left : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
@@ -69,11 +64,10 @@ impl Ray{
 	//sub vec3's
 	let focal_len_vec : Vec3 = Vec3::Init_Vec(0.0,0.0,focal_length);
 	viewport_upper_left.Sub_Self_Vec(focal_len_vec);
-	viewport_upper_left.print_val();
+	
 	viewport_upper_left.Sub_Self_Vec_ul(viewport_u,2.0);
-	viewport_upper_left.print_val();
+	
 	viewport_upper_left.Sub_Self_Vec_ul(viewport_v,2.0);
-	viewport_upper_left.print_val();
 
 	//calculate centre of first pixel
 	let mut pixel_00_loc : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
@@ -82,15 +76,11 @@ impl Ray{
 	//set  temp vec for 0.5*(vec3+vec3)
 	let mut temp_vec : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	temp_vec.Sum_Vec_Vec(temp_vec_v,temp_vec_u);
-	temp_vec.print_val();
+	
 	temp_vec.Mul_Self_Vec(0.5);
-	temp_vec.print_val();
 
 	//for final centre pixel location
 	pixel_00_loc.Sum_Vec_Vec(viewport_upper_left,temp_vec);
-	pixel_00_loc.print_val();
-
-	
 	
 	let mut count : usize = 0;
 	let mut pixel = Pixel{pos_x: 0,pos_y: 0,p_r:0,p_g:0,p_b:0,p_color:Color::new(255,0,0,1)};
@@ -113,10 +103,11 @@ impl Ray{
 
 	let blend_col1 : Vec3 = Vec3::Init_Vec(1.0,1.0,1.0);
 	let blend_col2 : Vec3 = Vec3::Init_Vec(0.5,0.7,1.0);
-	
+
+	println!("\nStart loop !! \n");
 	//init pixel pos
 	'outer : for r in 0..200{
-	    //println!("Scanlines remaining : {}",r);
+	    println!("Scanlines remaining : {}",r);
 	    for c in 0..200{
 		if c>200 {
 		    break 'outer
@@ -124,54 +115,27 @@ impl Ray{
 		//setting the pos
 		pixel_arr[count].pos_x = c;
 		pixel_arr[count].pos_y = r;
-
+		
 		//1. set the centre of current pixel
 
-		if c < 1{
-		    println!("temp_ pixel delta_u before");
-		    temp_pixel_delta_u.print_val();
-		}
-		temp_pixel_delta_u.Ret_Mul_Self_Vec(pixel_delta_u.clone(),
-						    c as f64);
-
-		if c < 1{
-		    println!("temp_ pixel delta u  after");
-		    temp_pixel_delta_u.print_val();
-		}
-		
-		temp_pixel_delta_v.Ret_Mul_Self_Vec(pixel_delta_v.clone(),
-						r as f64);
+		temp_pixel_delta_u.Mul_Val_Vec(pixel_delta_u.clone(),c as f64);
+		temp_pixel_delta_v.Mul_Val_Vec(pixel_delta_v.clone(),r as f64);
 		
 		pixel_centre = pixel_00_loc.clone();
 		pixel_centre.Sum_Self_Vec(temp_pixel_delta_u.clone());
 		pixel_centre.Sum_Self_Vec(temp_pixel_delta_v.clone());
-		//pixel_centre.print_val();
 
 		//ray direction
 		ray_direction.Sub_Vec_Vec(pixel_centre.clone(),camera_centre.clone());
-		//ray_direction.print_val();
 
-		//currently directly using the ray_direction
-		unit_direction.Unit_Self_Vec(ray_direction.clone());
-		//unit_direction.print_val();
-
-		//now applying the linear blend
-		let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
-		//println!("a: {} ",a);
-		//---now the main color
-		temp_color_1.Mul_Num_Vec(1.0-a,blend_col1.clone());
-		//temp_color_1.print_val();
-		temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
-		//temp_color_2.print_val();
-
-		temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
-		//temp_color_3.print_val();
+		//test-------
+		temp_color_3 = temp_color_3.Calculate_Color(ray_direction.clone(),blend_col1.clone(),
+							    blend_col2.clone());
 		
 		//convert the [0,1] to color
 		temp_color_3.Convert_To_Color();
-		//temp_color_3.Print_Color();
 		
-		// //set color
+		// ---------Old way! ______set color
 		// let temp_r : f32 = (r as f32)/(IMAGE_HEIGHT-1) as f32;
 		// let temp_g : f32 = (c as f32)/(IMAGE_WIDTH-1) as f32;
 		// let temp_b : f32 = 0.0;
@@ -187,8 +151,6 @@ impl Ray{
 		pixel_arr[count].p_r = temp_color_3.Get_R() as u8;
 		pixel_arr[count].p_g = temp_color_3.Get_G() as u8;
 		pixel_arr[count].p_b = temp_color_3.Get_B() as u8;
-
-		//println!("pr: {} pg: {} pb: {}",pixel_arr[count].p_r,pixel_arr[count].p_g,pixel_arr[count].p_b);
 
 		let color = Color::new(pixel_arr[count].p_r,pixel_arr[count].p_g,pixel_arr[count].p_b,255);
 		pixel_arr[count].p_color = color;

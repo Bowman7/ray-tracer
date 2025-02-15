@@ -55,21 +55,16 @@ impl Vec3{
     }
     //mul num to vec
     pub fn Mul_Self_Vec(&mut self,val: f64){
-	//println!("val: {} v1:{} v2 {} v3 {}",val,self.v1,self.v2,self.v3);
 	self.v1 = self.v1*val;
 	self.v2 = self.v2*val;
 	self.v3 = self.v3*val;
     }
     //return a mul self vec
-    pub fn Ret_Mul_Self_Vec(&mut self,v : Vec3 , val : f64)->Vec3{
-	Vec3{
-	    v1 : v.v1*val,
-	    v2 : v.v2*val,
-	    v3 : v.v3*val,
-	    vec_r : 0,
-	    vec_g : 0,
-	    vec_b : 0,
-	}
+    pub fn Mul_Val_Vec(&mut self,v : Vec3 , val : f64){
+	self.v1 = v.v1*val;
+	self.v2 = v.v1*val;
+	self.v3 = v.v1*val;
+	
     }
     //calc unit vector
     pub fn Unit_Self_Vec(&mut self,t_v1 : Vec3){
@@ -122,5 +117,35 @@ impl Vec3{
     }
     pub fn Get_B(&self)->i64{
 	return self.vec_b;
+    }
+    //print colors
+    pub fn Print_Color_Vec(&self){
+	println!("Color R: {} G: {} B: {}",self.vec_r,
+		 self.vec_g,self.vec_b
+	)
+    }
+
+    //calculate color and return
+    pub fn Calculate_Color(&self,ray_direction : Vec3,
+			   blend_col1 : Vec3,blend_col2 : Vec3
+    )->Vec3{
+	let mut unit_direction : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	let mut temp_color_1 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	let mut temp_color_2 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	let mut temp_color_3 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	
+	//currently directly using the ray_direction
+	unit_direction.Unit_Self_Vec(ray_direction.clone());
+	
+	//now applying the linear blend
+	let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
+	
+	//---now the main color
+	temp_color_1.Mul_Num_Vec(1.0-a,blend_col1.clone());
+	temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
+	
+	temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
+	
+	return temp_color_3;
     }
 }
