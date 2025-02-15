@@ -124,28 +124,77 @@ impl Vec3{
 		 self.vec_g,self.vec_b
 	)
     }
+    
+    //dot product of two vec
+    pub fn Dot_Vec_Vec(&self,v1 : Vec3,v2 : Vec3)->f64{
+	let temp : f64 = (v1.v1 * v2.v1
+			  + v1.v2 * v2.v2
+			  + v1.v3 * v2.v3
+	);
 
+	return temp;
+    }
+    //check if hit sphere func
+    pub fn Hit_Sphere(&self,ray_direction : Vec3) -> bool{
+	//sphere centre
+	let ray_origin : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	let sphere_centre : Vec3 = Self::Init_Vec(0.0,0.0,-1.0);
+	let radius : f64 = 0.5;
+	
+	//start calc
+	let mut CP : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	CP.Sub_Vec_Vec(sphere_centre.clone(),ray_origin.clone());
+	let a : f64 = self.Dot_Vec_Vec(ray_direction.clone(),
+					ray_direction.clone()
+	);
+	let b : f64 = -2.0 * self.Dot_Vec_Vec(ray_direction.clone(),
+					      CP.clone()
+	);
+	let c : f64 = self.Dot_Vec_Vec(CP.clone(),CP.clone()) - (radius*radius);
+
+	let discriminant : f64 = b*b - 4.0*a*c;
+	
+	println!("\na val : {}",a);
+	println!("b val : {}",b);
+	println!("c val : {}",c);
+	println!("d val : {}",discriminant);
+
+	if discriminant >= 0.0 {
+	    return true;
+	}else{
+	    return false;
+	}
+	return false;
+    }
     //calculate color and return
     pub fn Calculate_Color(&self,ray_direction : Vec3,
 			   blend_col1 : Vec3,blend_col2 : Vec3
     )->Vec3{
-	let mut unit_direction : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	let mut temp_color_1 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	let mut temp_color_2 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	let mut temp_color_3 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	
-	//currently directly using the ray_direction
-	unit_direction.Unit_Self_Vec(ray_direction.clone());
-	
-	//now applying the linear blend
-	let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
-	
-	//---now the main color
-	temp_color_1.Mul_Num_Vec(1.0-a,blend_col1.clone());
-	temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
-	
-	temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
-	
-	return temp_color_3;
+
+	//check if hits the sphere if yes then return red
+	let is_hit : bool  = self.Hit_Sphere(ray_direction.clone());
+	if is_hit {
+	    let temp_color_3 : Vec3 = Self::Init_Vec(255.0,0.0,0.0);
+	    return temp_color_3;
+	}else{
+	    let mut unit_direction : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	    let mut temp_color_1 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	    let mut temp_color_2 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	    let mut temp_color_3 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	    
+	    //currently directly using the ray_direction
+	    unit_direction.Unit_Self_Vec(ray_direction.clone());
+	    
+	    //now applying the linear blend
+	    let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
+	    
+	    //---now the main color
+	    temp_color_1.Mul_Num_Vec(1.0-a,blend_col1.clone());
+	    temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
+	    
+	    temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
+	    
+	    return temp_color_3;
+	}
     }
 }
