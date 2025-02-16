@@ -6,7 +6,7 @@ use ray::Ray;
 
 fn main(){
     let (mut rl,thread)  = raylib::init()
-	.size(1000,1000)
+	.size(1280,720)
 	.title("Raytracer in a weekend")
 	.build();
 

@@ -68,13 +68,18 @@ impl Vec3{
     }
     //calc unit vector
     pub fn Unit_Self_Vec(&mut self,t_v1 : Vec3){
+	println!("\nFind out unit vecotors");
+	t_v1.print_val();
 	let length : f64 = (t_v1.v1*t_v1.v1 +
 			    t_v1.v2*t_v1.v2 + t_v1.v3*t_v1.v3).sqrt();
 
+	println!("The length is L :{}" ,length);
 	//println!("v1: {} Length : {}",self.v1,length);
 	self.v1 = t_v1.v1 / length;
 	self.v2 = t_v1.v2 / length;
 	self.v3 = t_v1.v3 / length;
+	println!("unit val");
+	self.print_val();
     }
     pub fn Get_V2(&self)->f64{
 	let t : f64 = self.v2;
@@ -88,20 +93,29 @@ impl Vec3{
     }
     //now convert the vec3 values into color[0,255]
     pub fn Convert_To_Color(&mut self){
-	let r : f64 = self.v1;
-	let g : f64 = self.v2;
-	let b : f64 = self.v3;
+	// let r : f64 = self.v1;
+	// let g : f64 = self.v2;
+	// let b : f64 = self.v3;
 
-	//translate [0,1] to [0,255]
+	// //translate [0,1] to [0,255]
 
-	let r_int : i64 = (255.999 * r) as i64;
-	let g_int : i64 = (255.999 * g) as i64;	
-	let b_int : i64 = (255.999 * b) as i64;
+	// let r_int : i64 = (255.999 * r) as i64;
+	// let g_int : i64 = (255.999 * g) as i64;	
+	// let b_int : i64 = (255.999 * b) as i64;
 
-	//put into the rgb val in vec
-	self.vec_r = r_int;
-	self.vec_g = g_int;
-	self.vec_b = b_int;
+	// //put into the rgb val in vec
+	// self.vec_r = r_int;
+	// self.vec_g = g_int;
+	// self.vec_b = b_int;
+	// Clamp the values to [0, 1]
+	self.v1 = self.v1.clamp(0.0, 1.0);
+	self.v2 = self.v2.clamp(0.0, 1.0);
+	self.v3 = self.v3.clamp(0.0, 1.0);
+	
+	// Convert to [0, 255]
+	self.vec_r = (255.999 * self.v1) as i64;
+	self.vec_g = (255.999 * self.v2) as i64;
+	self.vec_b = (255.999 * self.v3) as i64;
     }
     //print color of vec
     pub fn Print_Color(&self){
@@ -172,29 +186,39 @@ impl Vec3{
     )->Vec3{
 
 	//check if hits the sphere if yes then return red
-	let is_hit : bool  = self.Hit_Sphere(ray_direction.clone());
-	if is_hit {
-	    let temp_color_3 : Vec3 = Self::Init_Vec(255.0,0.0,0.0);
-	    return temp_color_3;
-	}else{
-	    let mut unit_direction : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	    let mut temp_color_1 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	    let mut temp_color_2 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	    let mut temp_color_3 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	    
-	    //currently directly using the ray_direction
-	    unit_direction.Unit_Self_Vec(ray_direction.clone());
-	    
-	    //now applying the linear blend
-	    let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
-	    
-	    //---now the main color
-	    temp_color_1.Mul_Num_Vec(1.0-a,blend_col1.clone());
-	    temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
-	    
-	    temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
-	    
-	    return temp_color_3;
-	}
+	// let is_hit : bool  = self.Hit_Sphere(ray_direction.clone());
+	// if is_hit {
+	//     let temp_color_3 : Vec3 = Self::Init_Vec(255.0,0.0,0.0);
+	//     return temp_color_3;
+	// }else{
+	let mut unit_direction : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	let mut temp_color_1 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	let mut temp_color_2 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	let mut temp_color_3 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	
+	//currently directly using the ray_direction
+	unit_direction.Unit_Self_Vec(ray_direction.clone());
+	
+	//now applying the linear blend
+	let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
+	println!("\na value: {}",a);
+	
+	//---now the main color
+	println!("temp col1 before");
+	temp_color_1.print_val();
+	temp_color_1.Mul_Num_Vec(1.0-a,blend_col1.clone());
+	println!("temp col1 after");
+	temp_color_1.print_val();
+	
+	temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
+	
+	temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
+
+	temp_color_3.v1 = temp_color_3.v1.clamp(0.0, 1.0);
+	temp_color_3.v2 = temp_color_3.v2.clamp(0.0, 1.0);
+	temp_color_3.v3 = temp_color_3.v3.clamp(0.0, 1.0);
+	
+	return temp_color_3;
+	
     }
 }

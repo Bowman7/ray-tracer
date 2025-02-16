@@ -2,11 +2,17 @@ use raylib::prelude::*;
 
 use crate::vec3::Vec3;
 
-const PIXEL_COUNT : usize = 40000;
+const CANVAS_HEIGHT : i32 = 720;
+const CANVAS_WIDTH  : i32 = 1280;
+
+
 const PIXEL_SIZE : i32 = 5;
 
-const IMAGE_WIDTH : i32 = 200;
-const IMAGE_HEIGHT : i32 = 200;
+const IMAGE_WIDTH : i32 = CANVAS_WIDTH / PIXEL_SIZE;
+
+const IMAGE_HEIGHT : i32 = CANVAS_HEIGHT/PIXEL_SIZE;
+
+const PIXEL_COUNT : usize = (IMAGE_WIDTH*IMAGE_HEIGHT) as usize;
 
 //single pixel struct
 #[derive(Clone,Copy)]
@@ -28,8 +34,13 @@ pub struct Ray{
 
 impl Ray{
     
+    
     //init ray
     pub fn Init_Ray() -> Self{
+	//check the sizes
+	println!("Image width : {}",IMAGE_WIDTH);
+	println!("Image height : {}",IMAGE_HEIGHT);
+	
 	//vec3
 	//let mut v3  = Vec3::Init();
 
@@ -37,19 +48,23 @@ impl Ray{
 	let image_width : i32 = IMAGE_WIDTH;
 
 	//calc image height
-	let image_height : i32 = (image_width as f64/aspect_ratio) as i32;
-
+	//let image_height : i32 = (image_width as f64/aspect_ratio) as i32;
+	let image_height : i32 = IMAGE_HEIGHT;
+	
 	//camera
 	let focal_length : f64 = 1.0;
 	let viewport_height : f64 = 2.0;
 	let viewport_width : f64 = viewport_height*(image_width as f64 /image_height as f64);
-
 	println!("Viewport_width: {}",viewport_width);
+	
 	let camera_centre : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 
 	//vec across: they give full width or hor and vert value of the canvas
 	let viewport_u : Vec3 = Vec3::Init_Vec(viewport_width,0.0,0.0);
 	let viewport_v : Vec3 = Vec3::Init_Vec(0.0,-viewport_height,0.0);
+	println!("\nViewport_u n v");
+	viewport_u.print_val();
+	viewport_v.print_val();
 
 	//delta vecs:these are small vals used for moving either left or right in viewport
 	let mut pixel_delta_u : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
@@ -57,7 +72,9 @@ impl Ray{
 	
 	let mut pixel_delta_v : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	pixel_delta_v.Div_Vec_Double(&viewport_v,image_height as f64);
-
+	println!("\npixel_delta_u n v");
+	pixel_delta_u.print_val();
+	pixel_delta_v.print_val();
 	//upper left pixel proof
 	let mut viewport_upper_left : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 
@@ -69,6 +86,9 @@ impl Ray{
 	
 	viewport_upper_left.Sub_Self_Vec_ul(viewport_v,2.0);
 
+	println!("\nUpper left vec");
+	viewport_upper_left.print_val();
+
 	//calculate centre of first pixel
 	let mut pixel_00_loc : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	let temp_vec_v : Vec3 = pixel_delta_v.clone();
@@ -76,11 +96,17 @@ impl Ray{
 	//set  temp vec for 0.5*(vec3+vec3)
 	let mut temp_vec : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	temp_vec.Sum_Vec_Vec(temp_vec_v,temp_vec_u);
+	println!("\nsum before mul 0.5");
+	temp_vec.print_val();
 	
 	temp_vec.Mul_Self_Vec(0.5);
-
+	println!("\n after mul 0.5");
+	temp_vec.print_val();
+	
 	//for final centre pixel location
 	pixel_00_loc.Sum_Vec_Vec(viewport_upper_left,temp_vec);
+	println!("\nPixel 00 loc!");
+	pixel_00_loc.print_val();
 	
 	let mut count : usize = 0;
 	let mut pixel = Pixel{pos_x: 0,pos_y: 0,p_r:0,p_g:0,p_b:0,p_color:Color::new(255,0,0,1)};
@@ -90,15 +116,12 @@ impl Ray{
 	//init some vec3 for color calculation
 	let mut pixel_centre : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 	
-	let mut temp_pixel_delta_u : Vec3 = pixel_delta_u.clone();
-	let mut temp_pixel_delta_v : Vec3 = pixel_delta_v.clone();
+	let mut temp_pixel_delta_u : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
+	let mut temp_pixel_delta_v : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 
 	let mut ray_direction : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
-	let mut unit_direction : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
 
 	//variables for the linear blend
-	let mut temp_color_1 : Vec3  = Vec3::Init_Vec(0.0,0.0,0.0);
-	let mut temp_color_2 : Vec3  = Vec3::Init_Vec(0.0,0.0,0.0);
 	let mut temp_color_3 : Vec3  = Vec3::Init_Vec(0.0,0.0,0.0);
 
 	let blend_col1 : Vec3 = Vec3::Init_Vec(1.0,1.0,1.0);
@@ -106,10 +129,10 @@ impl Ray{
 
 	println!("\nStart loop !! \n");
 	//init pixel pos
-	'outer : for r in 0..200{
+	'outer : for r in 0..image_height{
 	    println!("Scanlines remaining : {}",r);
-	    for c in 0..200{
-		if c>200 {
+	    for c in 0..image_width{
+		if c>image_width {
 		    break 'outer
 		}
 		//setting the pos
@@ -131,9 +154,13 @@ impl Ray{
 		//test-------
 		temp_color_3 = temp_color_3.Calculate_Color(ray_direction.clone(),blend_col1.clone(),
 							    blend_col2.clone());
+		//color got
+		println!("\nThe final color");
+		temp_color_3.print_val();
 		
 		//convert the [0,1] to color
 		temp_color_3.Convert_To_Color();
+		temp_color_3.Print_Color();
 		
 		// ---------Old way! ______set color
 		// let temp_r : f32 = (r as f32)/(IMAGE_HEIGHT-1) as f32;
