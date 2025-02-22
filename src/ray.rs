@@ -8,9 +8,9 @@ const CANVAS_WIDTH  : i32 = 1280;
 
 const PIXEL_SIZE : i32 = 5;
 
-const IMAGE_WIDTH : i32 = CANVAS_WIDTH / PIXEL_SIZE;
+const IMAGE_WIDTH : i32 = 256;
 
-const IMAGE_HEIGHT : i32 = CANVAS_HEIGHT/PIXEL_SIZE;
+const IMAGE_HEIGHT : i32 = 144;
 
 const PIXEL_COUNT : usize = (IMAGE_WIDTH*IMAGE_HEIGHT) as usize;
 
@@ -68,34 +68,34 @@ impl Ray{
 
 	//delta vecs:these are small vals used for moving either left or right in viewport
 	let mut pixel_delta_u : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
-	pixel_delta_u.Div_Vec_Double(&viewport_u,image_width as f64);
+	pixel_delta_u.Div_Vec_Double(viewport_u.clone(),image_width as f64);
 	
 	let mut pixel_delta_v : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
-	pixel_delta_v.Div_Vec_Double(&viewport_v,image_height as f64);
+	pixel_delta_v.Div_Vec_Double(viewport_v.clone(),image_height as f64);
 	println!("\npixel_delta_u n v");
 	pixel_delta_u.print_val();
 	pixel_delta_v.print_val();
 	//upper left pixel proof
-	let mut viewport_upper_left : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
+	let mut viewport_upper_left : Vec3 = camera_centre.clone();
 
 	//sub vec3's
 	let focal_len_vec : Vec3 = Vec3::Init_Vec(0.0,0.0,focal_length);
 	viewport_upper_left.Sub_Self_Vec(focal_len_vec);
 	
-	viewport_upper_left.Sub_Self_Vec_ul(viewport_u,2.0);
+	viewport_upper_left.Sub_Self_Vec_ul(viewport_u.clone(),2.0);
 	
-	viewport_upper_left.Sub_Self_Vec_ul(viewport_v,2.0);
+	viewport_upper_left.Sub_Self_Vec_ul(viewport_v.clone(),2.0);
 
 	println!("\nUpper left vec");
 	viewport_upper_left.print_val();
 
 	//calculate centre of first pixel
-	let mut pixel_00_loc : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
+	let mut pixel_00_loc : Vec3 = viewport_upper_left.clone();
 	let temp_vec_v : Vec3 = pixel_delta_v.clone();
 	let temp_vec_u : Vec3 = pixel_delta_u.clone();
 	//set  temp vec for 0.5*(vec3+vec3)
 	let mut temp_vec : Vec3 = Vec3::Init_Vec(0.0,0.0,0.0);
-	temp_vec.Sum_Vec_Vec(temp_vec_v,temp_vec_u);
+	temp_vec.Sum_Vec_Vec(temp_vec_v.clone(),temp_vec_u.clone());
 	println!("\nsum before mul 0.5");
 	temp_vec.print_val();
 	
@@ -104,7 +104,7 @@ impl Ray{
 	temp_vec.print_val();
 	
 	//for final centre pixel location
-	pixel_00_loc.Sum_Vec_Vec(viewport_upper_left,temp_vec);
+	pixel_00_loc.Sum_Self_Vec(temp_vec.clone());
 	println!("\nPixel 00 loc!");
 	pixel_00_loc.print_val();
 	
@@ -124,17 +124,14 @@ impl Ray{
 	//variables for the linear blend
 	let mut temp_color_3 : Vec3  = Vec3::Init_Vec(0.0,0.0,0.0);
 
-	let blend_col1 : Vec3 = Vec3::Init_Vec(1.0,1.0,1.0);
-	let blend_col2 : Vec3 = Vec3::Init_Vec(0.5,0.7,1.0);
+	let blend_col1 : Vec3 = Vec3::Init_Vec(0.5,0.7,1.0);
+	let blend_col2 : Vec3 = Vec3::Init_Vec(1.0,1.0,1.0);
 
 	println!("\nStart loop !! \n");
 	//init pixel pos
-	'outer : for r in 0..image_height{
-	    println!("Scanlines remaining : {}",r);
+	for r in 0..image_height{
+	    //println!("Scanlines remaining : {}",r);
 	    for c in 0..image_width{
-		if c>image_width {
-		    break 'outer
-		}
 		//setting the pos
 		pixel_arr[count].pos_x = c;
 		pixel_arr[count].pos_y = r;
@@ -153,15 +150,18 @@ impl Ray{
 
 		//test-------
 		temp_color_3 = temp_color_3.Calculate_Color(ray_direction.clone(),blend_col1.clone(),
-							    blend_col2.clone());
+							    blend_col2.clone(),r);
 		//color got
-		println!("\nThe final color");
-		temp_color_3.print_val();
 		
 		//convert the [0,1] to color
 		temp_color_3.Convert_To_Color();
-		temp_color_3.Print_Color();
+		//temp_color_3.Print_Color();
+
 		
+		if c<256 && r<1{
+		    println!("r: {} c : {}",r,c);
+		    temp_color_3.Print_Color();
+		} 
 		// ---------Old way! ______set color
 		// let temp_r : f32 = (r as f32)/(IMAGE_HEIGHT-1) as f32;
 		// let temp_g : f32 = (c as f32)/(IMAGE_WIDTH-1) as f32;
@@ -185,8 +185,8 @@ impl Ray{
 		count+=1;
 	    }
 	}
-	println!("Done!");
-	Ray {pixels : pixel_arr,IMAGE_WIDTH : 5,IMAGE_HEIGHT : 5 }
+	println!("Done! total count : {}",count);
+	Ray {pixels : pixel_arr,IMAGE_WIDTH : IMAGE_WIDTH as u32,IMAGE_HEIGHT : IMAGE_HEIGHT as u32}
     }
     
     pub fn Draw_Ray(&self,rl: &mut RaylibHandle,thread: &RaylibThread){
@@ -198,6 +198,7 @@ impl Ray{
 	
 	//draw pixel
 	for pixel in self.pixels{
+	    //println!("\n X :{} Y: {}",pixel.pos_x,pixel.pos_y);
 	    d.draw_rectangle(pixel.pos_x*PIXEL_SIZE,pixel.pos_y*PIXEL_SIZE,
 			     PIXEL_SIZE,PIXEL_SIZE,pixel.p_color);
 	}

@@ -17,10 +17,10 @@ impl Vec3{
     pub fn print_val(&self){
 	println!("Val: {} {} {}",self.v1,self.v2,self.v3);
     }
-    pub fn Div_Vec_Double(&mut self,viewport_u_v : &Vec3, image_width: f64){
-	self.v1 = viewport_u_v.v1 * (1.0/image_width);
-	self.v2 = viewport_u_v.v2 * (1.0/image_width);
-	self.v3 = viewport_u_v.v3 * (1.0/image_width);
+    pub fn Div_Vec_Double(&mut self,v : Vec3, val: f64){
+	self.v1 =v.v1 * (1.0/val);
+	self.v2 =v.v2 * (1.0/val);
+	self.v3 =v.v3 * (1.0/val);
 	
     }
     //sub self to vec3
@@ -37,15 +37,19 @@ impl Vec3{
     }
     //sub vec3 to vec3 for upper left pixel
     pub fn Sub_Self_Vec_ul(&mut self, p_vec : Vec3, val: f64){
-	self.v1 = self.v1  - p_vec.v1/val;
-	self.v2 = self.v2  - p_vec.v2/val;
-	self.v3 = self.v3  - p_vec.v3/val;
+	let t1 : f64 = p_vec.v1/val;
+	let t2 : f64 = p_vec.v2/val;
+	let t3 : f64 = p_vec.v3/val;
+	
+	self.v1 = self.v1  - t1;
+	self.v2 = self.v2  - t2;
+	self.v3 = self.v3  - t3;
     }
     //sum two vec3
     pub fn Sum_Vec_Vec(&mut self, v_1 : Vec3 , v_2 : Vec3){
-	self.v1 = v_1.v1+v_2.v1;
-	self.v2 = v_1.v2+v_2.v2;
-	self.v3 = v_1.v3+v_2.v3;
+	self.v1 = v_1.v1 + v_2.v1;
+	self.v2 = v_1.v2 + v_2.v2;
+	self.v3 = v_1.v3 + v_2.v3;
     }
     //sum self to vec3
     pub fn Sum_Self_Vec(&mut self,v_1 : Vec3){
@@ -68,19 +72,21 @@ impl Vec3{
     }
     //calc unit vector
     pub fn Unit_Self_Vec(&mut self,t_v1 : Vec3){
-	println!("\nFind out unit vecotors");
-	t_v1.print_val();
+	
 	let length : f64 = (t_v1.v1*t_v1.v1 +
 			    t_v1.v2*t_v1.v2 + t_v1.v3*t_v1.v3).sqrt();
 
-	println!("The length is L :{}" ,length);
-	//println!("v1: {} Length : {}",self.v1,length);
-	self.v1 = t_v1.v1 / length;
-	self.v2 = t_v1.v2 / length;
-	self.v3 = t_v1.v3 / length;
-	println!("unit val");
-	self.print_val();
+	if length > 0.0{
+	    self.v1 = t_v1.v1 / length;
+	    self.v2 = t_v1.v2 / length;
+	    self.v3 = t_v1.v3 / length;
+	}
     }
+    pub fn Get_V1(&self)->f64{
+	let t : f64 = self.v1;
+	return t;
+    }
+    
     pub fn Get_V2(&self)->f64{
 	let t : f64 = self.v2;
 	return t;
@@ -182,7 +188,8 @@ impl Vec3{
     }
     //calculate color and return
     pub fn Calculate_Color(&self,ray_direction : Vec3,
-			   blend_col1 : Vec3,blend_col2 : Vec3
+			   blend_col1 : Vec3,blend_col2 : Vec3,
+			   r : i32
     )->Vec3{
 
 	//check if hits the sphere if yes then return red
@@ -200,16 +207,13 @@ impl Vec3{
 	unit_direction.Unit_Self_Vec(ray_direction.clone());
 	
 	//now applying the linear blend
-	let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
-	println!("\na value: {}",a);
+	//let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
+	let a : f64 = r as f64 / 144.0; 
+
+	//println!("\na value: {}",a);
 	
 	//---now the main color
-	println!("temp col1 before");
-	temp_color_1.print_val();
 	temp_color_1.Mul_Num_Vec(1.0-a,blend_col1.clone());
-	println!("temp col1 after");
-	temp_color_1.print_val();
-	
 	temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
 	
 	temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
