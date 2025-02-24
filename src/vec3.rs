@@ -99,21 +99,7 @@ impl Vec3{
     }
     //now convert the vec3 values into color[0,255]
     pub fn Convert_To_Color(&mut self){
-	// let r : f64 = self.v1;
-	// let g : f64 = self.v2;
-	// let b : f64 = self.v3;
 
-	// //translate [0,1] to [0,255]
-
-	// let r_int : i64 = (255.999 * r) as i64;
-	// let g_int : i64 = (255.999 * g) as i64;	
-	// let b_int : i64 = (255.999 * b) as i64;
-
-	// //put into the rgb val in vec
-	// self.vec_r = r_int;
-	// self.vec_g = g_int;
-	// self.vec_b = b_int;
-	// Clamp the values to [0, 1]
 	self.v1 = self.v1.clamp(0.0, 1.0);
 	self.v2 = self.v2.clamp(0.0, 1.0);
 	self.v3 = self.v3.clamp(0.0, 1.0);
@@ -160,26 +146,28 @@ impl Vec3{
 	let ray_origin : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
 	let sphere_centre : Vec3 = Self::Init_Vec(0.0,0.0,-1.0);
 	let radius : f64 = 0.5;
-	
+
+	let mut unit_direction : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
+	unit_direction.Unit_Self_Vec(ray_direction.clone());
 	//start calc
 	let mut CP : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
-	CP.Sub_Vec_Vec(sphere_centre.clone(),ray_origin.clone());
-	let a : f64 = self.Dot_Vec_Vec(ray_direction.clone(),
-					ray_direction.clone()
+	CP.Sub_Vec_Vec(ray_origin.clone(),sphere_centre.clone());
+	
+	let a : f64 = self.Dot_Vec_Vec(unit_direction.clone(),
+					unit_direction.clone()
 	);
-	let b : f64 = -2.0 * self.Dot_Vec_Vec(ray_direction.clone(),
+	let b : f64 = -2.0 * self.Dot_Vec_Vec(unit_direction.clone(),
 					      CP.clone()
 	);
 	let c : f64 = self.Dot_Vec_Vec(CP.clone(),CP.clone()) - (radius*radius);
 
 	let discriminant : f64 = b*b - 4.0*a*c;
-	
 	println!("\na val : {}",a);
 	println!("b val : {}",b);
 	println!("c val : {}",c);
-	println!("d val : {}",discriminant);
-
+	println!("discriminant  val : {}",discriminant);
 	if discriminant >= 0.0 {
+	   
 	    return true;
 	}else{
 	    return false;
@@ -193,11 +181,11 @@ impl Vec3{
     )->Vec3{
 
 	//check if hits the sphere if yes then return red
-	// let is_hit : bool  = self.Hit_Sphere(ray_direction.clone());
-	// if is_hit {
-	//     let temp_color_3 : Vec3 = Self::Init_Vec(255.0,0.0,0.0);
-	//     return temp_color_3;
-	// }else{
+	let is_hit : bool  = self.Hit_Sphere(ray_direction.clone());
+	if is_hit {
+	    let temp_color_3 : Vec3 = Self::Init_Vec(1.0,0.0,0.0);
+	    return temp_color_3;
+	}
 	let mut unit_direction : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
 	let mut temp_color_1 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
 	let mut temp_color_2 : Vec3 = Self::Init_Vec(0.0,0.0,0.0);
@@ -209,7 +197,7 @@ impl Vec3{
 	//now applying the linear blend
 	//let a : f64 = 0.5 * (unit_direction.Get_V2() + 1.0);
 	let a : f64 = r as f64 / 144.0; 
-
+	
 	//println!("\na value: {}",a);
 	
 	//---now the main color
@@ -217,7 +205,7 @@ impl Vec3{
 	temp_color_2.Mul_Num_Vec(a,blend_col2.clone());
 	
 	temp_color_3.Sum_Vec_Vec(temp_color_1.clone(),temp_color_2.clone());
-
+	
 	temp_color_3.v1 = temp_color_3.v1.clamp(0.0, 1.0);
 	temp_color_3.v2 = temp_color_3.v2.clamp(0.0, 1.0);
 	temp_color_3.v3 = temp_color_3.v3.clamp(0.0, 1.0);
